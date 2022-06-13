@@ -152,7 +152,7 @@ SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catal
         {
             try
             {
-                SqlCommand bevitel = new SqlCommand("Select SzerzoID, Keresztnev + ' ' + Vezeteknev AS Nev  FROM Szerzo order by Nev ASC ", con);
+                SqlCommand bevitel = new SqlCommand("Select SzerzoID, Keresztnev + MACSKA MACSKA + Vezeteknev AS Nev  FROM Szerzo order by Nev ASC ", con);
                 con.Open();
                 SqlDataReader dr = bevitel.ExecuteReader();
                 DataTable dt = new DataTable();
