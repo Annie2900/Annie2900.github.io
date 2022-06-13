@@ -23,7 +23,228 @@ button {
 <button style="color:transparent" >I'm a button</button>
 
 
-<input type="hidden" value="2" id="1">
+<input type="hidden" value='
+SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=a1-a2;Integrated Security=True");
+        private void tabPage1_Enter(object sender, EventArgs e)
+        {
+            tablazatKitoltes();
+        }
+        private void tablazatKitoltes()
+        {
+            listView1.Clear();
+            listView1.View = View.Details;
+
+            listView1.Columns.Add("Azonosito");
+            listView1.Columns.Add("Keresztnev", 150);
+            listView1.Columns.Add("Vezeteknev", 150);
+            listView1.Columns.Add("SzuletesiDatum", 200);
+            listView1.Columns.Add("Cim", 150);
+            listView1.Columns.Add("Titulus");
+
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("select * from Szerzo", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        ListViewItem li = new ListViewItem(dr[0].ToString());
+                        li.SubItems.Add(dr[1].ToString());
+                        li.SubItems.Add(dr[2].ToString());
+                        li.SubItems.Add(dr[3].ToString());
+                        li.SubItems.Add(dr[4].ToString());
+                        li.SubItems.Add(dr[5].ToString());
+                        listView1.Items.Add(li);
+ 
+                    }
+                }
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+
+
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            if(!String.IsNullOrEmpty(textBox1.Text))
+            {
+                try
+                {
+                    SqlCommand cmd = new SqlCommand("select Keresztnev, Vezeteknev, SzuletesiDatum from Szerzo where SzerzoID =@id", con);
+                    cmd.Parameters.AddWithValue("@id", Convert.ToInt32(textBox1.Text));
+
+                    con.Open();
+                    SqlDataReader dr = cmd.ExecuteReader();
+
+
+                    if (dr.HasRows)
+                    {
+                        
+                        while (dr.Read())
+                        {
+                            DateTime datum = Convert.ToDateTime(dr[2]);
+                            textBox2.Text = dr[0].ToString();
+                            textBox3.Text = dr[1].ToString();
+                            maskedTextBox1.Text = datum.ToString("dd.MM.yyyy");
+                        }
+                        button1.Enabled = false;
+                    }
+                    else
+                    {
+                        textBox2.Text = "";
+                        textBox3.Clear();
+                        maskedTextBox1.Clear();
+                        button1.Enabled = true;
+                    }
+                    dr.Close();
+
+                }
+                catch (FormatException x) { MessageBox.Show("nem megfelelo adatott vitt be"); }
+                catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+            }
+            else
+            {
+                textBox2.Text = "";
+                textBox3.Clear();
+                maskedTextBox1.Clear();
+                button1.Enabled = true;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try 
+            {
+                SqlCommand bevitel = new SqlCommand("Insert into Szerzo (SzerzoID, Keresztnev, Vezeteknev, SzuletesiDatum) values (@id ,@knev, @vnev, @szd) ", con);
+                bevitel.Parameters.AddWithValue("@id", Convert.ToInt32(textBox1.Text));
+                bevitel.Parameters.AddWithValue("@knev", (textBox2.Text));
+                bevitel.Parameters.AddWithValue("@vnev", (textBox3.Text));
+                bevitel.Parameters.AddWithValue("@szd", Convert.ToDateTime(maskedTextBox1.Text));
+
+                con.Open();
+                if (bevitel.ExecuteNonQuery() > 0)
+                {
+                    MessageBox.Show("Sikeres bevitel.");
+
+                }
+                else MessageBox.Show("Sikertelen bevitel.");
+
+            }
+            catch (FormatException x) { MessageBox.Show("nem megfelelo adatott vitt be"); }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { 
+                con.Close();
+                tablazatKitoltes();
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void tabPage2_Enter(object sender, EventArgs e)
+        {
+            try
+            {
+                SqlCommand bevitel = new SqlCommand("Select SzerzoID, Keresztnev + ' ' + Vezeteknev AS Nev  FROM Szerzo order by Nev ASC ", con);
+                con.Open();
+                SqlDataReader dr = bevitel.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                comboBox2.ValueMember = "SzerzoID";
+                comboBox2.DisplayMember = "Nev";
+                comboBox2.DataSource = dt;
+                dr.Close();
+            }
+            
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally
+            {
+                con.Close();
+                
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string parancs = " SELECT Szerzo.Keresztnev, Szerzo.Vezeteknev, YEAR(Kikolcsonozte.KolcsonzesDatuma) AS EV, COUNT(Kikolcsonozte.KonyvID) AS [kolcsonzesek szama] FROM         Szerzo INNER JOIN Megirta ON Szerzo.SzerzoID = Megirta.SzerzoID INNER JOIN Konyv ON Megirta.KonyvID = Konyv.KonyvID INNER JOIN Kikolcsonozte ON Konyv.KonyvID = Kikolcsonozte.KonyvID WHERE     (Szerzo.SzerzoID = @szerzoid) AND YEAR(Kikolcsonozte.KolcsonzesDatuma)>= YEAR(GETDATE())-@idoszak GROUP BY Szerzo.Keresztnev, Szerzo.Vezeteknev, YEAR(Kikolcsonozte.KolcsonzesDatuma) HAVING COUNT(Kikolcsonozte.KonyvID) > @kolcsonzesekSzama ";
+            gridfeltoltes(parancs);
+            grafikon(parancs);
+        }
+
+        private void gridfeltoltes(string parancs)
+        {
+            try
+            {
+                SqlCommand grid = new SqlCommand(parancs, con);
+                grid.Parameters.AddWithValue("@idoszak", numericUpDown2.Value);
+                grid.Parameters.AddWithValue("@kolcsonzesekSzama", numericUpDown1.Value);
+                grid.Parameters.AddWithValue("@szerzoid", comboBox2.SelectedValue);
+                con.Open();
+                SqlDataReader dr = grid.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                dataGridView1.DataSource = dt;
+                dr.Close();
+
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+
+            }
+        }
+        private void grafikon(string parancs)
+        {
+            chart1.Series.Clear();
+            chart1.Legends.Clear();
+            chart1.Series.Add("Kolcsonzes");
+            chart1.Series["Kolcsonzes"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            try 
+            {
+                SqlCommand grid = new SqlCommand(parancs, con);
+                grid.Parameters.AddWithValue("@idoszak", numericUpDown2.Value);
+                grid.Parameters.AddWithValue("@kolcsonzesekSzama", numericUpDown1.Value);
+                grid.Parameters.AddWithValue("@szerzoid", comboBox2.SelectedValue);
+                con.Open();
+                SqlDataReader dr = grid.ExecuteReader();
+                while (dr.Read())
+                {
+                    chart1.Series["Kolcsonzes"].Points.AddXY(dr[2], dr[3]);
+                }
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            tabControl1.SelectedIndex = 0;
+        } ' id="1">
+
+
+
+
+
+
 <input type="hidden" value="3" id="2">
 <input type="hidden" value="4" id="3">
 <input type="hidden" value="5" id="6">
