@@ -24,6 +24,18 @@ button {
 
 
 <input type="hidden" value='
+
+CREATE TABLE Iskola(
+IskolaID int PRIMARY KEY,
+IskolaElnevezes nvarchar(250) NOT NULL,
+Cim nvarchar(250) NOT NULL,
+Varos nvarchar(250) NOT NULL
+);
+ALTER TABLE Peldany ADD IskolaID int;
+ALTER TABLE Peldany ADD FOREIGN KEY (IskolaID) REFERENCES Iskola(IskolaID);
+ALTER TABLE Konyv ADD BeszerzesiDatum Date,
+CONSTRAINT CHK_DATUM CHECK (BeszerzesiDatum >= ’01/01/2000′);
+
 SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=a1-a2;Integrated Security=True");
         private void tabPage1_Enter(object sender, EventArgs e)
         {
@@ -246,6 +258,15 @@ SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catal
 
 
 <input type="hidden" value='
+CREATE TABLE Formatum(
+FormatumID int PRIMARY KEY,
+Elnevezes nvarchar(250),
+);
+ALTER TABLE Peldany ADD FormatumID int;
+ALTER TABLE Peldany ADD FOREIGN KEY (FormatumID) REFERENCES Formatum(FormatumID);
+ALTER TABLE Olvaso ADD BefizetesDatuma date,
+CONSTRAINT CHKBefizetesDatuma CHECK (BefizetesDatuma >= GETDATE());
+
 public Form1()
         {
             InitializeComponent();
@@ -461,6 +482,22 @@ public Form1()
         } ' id="2">
 
 <input type="hidden" value='
+CREATE TABLE Alvallalkozo(
+AlvallalkozoID smallint PRIMARY KEY,
+AlvallalkozoElnevezes nvarchar(250),
+Telefonszam nvarchar(30),
+Cim nvarchar(250),
+Varos nvarchar(250)
+);
+CREATE TABLE Alvallalkozo_Projekt(
+AlvallalkozoID smallint FOREIGN KEY REFERENCES Alvallalkozo(AlvallalkozoID),
+ProjektID smallint FOREIGN KEY REFERENCES Projekt(ProjektID),
+KezdoDatum date DEFAULT GETDATE(),
+BefejezoDatum date DEFAULT DATEFROMPARTS(YEAR(GETDATE()), 12, 31),
+PRIMARY KEY(AlvallalkozoID,ProjektID, KezdoDatum)
+);
+ALTER TABLE Alvallalkozo_Projekt ADD CONSTRAINT CHK_KezdoDatum CHECK (KezdoDatum < BefejezoDatum);
+
 class Projekt
     {
         private int id;
@@ -631,6 +668,20 @@ public Form1()
     }' id="3">
 	
 <input type="hidden" value='
+CREATE TABLE Tulaj(
+TulajID int PRIMARY KEY,
+Vezeteknev nvarchar(250),
+Keresztnev nvarchar (250),
+Cim nvarchar (250),
+Telefonszam nvarchar (250),
+ElsoTulaj bit
+);
+ALTER TABLE Jarmu ADD
+
+TulajID int FOREIGN KEY (TulajID) REFERENCES Tulaj (TulajID),
+AjanlottAr int,
+CONSTRAINT CHK_AR CHECK (AjanlottAr >0);
+
 class Gyarto
     {
         private int id;
@@ -885,6 +936,19 @@ public Form1()
     } ' id="6">
 	
 <input type="hidden" value='
+CREATE TABLE Szakirany(
+SzakiranyID int PRIMARY KEY,
+Elnevezes nvarchar(250),
+AkkreditacioDatuma date NOT NULL CONSTRAINT CHK_Akkreditacio CHECK (YEAR(GETDATE())-
+YEAR(AkkreditacioDatuma) < 7)
+);
+CREATE TABLE Szakirany_Tantargy(
+SzakiranyID int FOREIGN KEY REFERENCES Szakirany (SzakiranyID),
+TantargyID int FOREIGN KEY REFERENCES Tantargy (TantargyID),
+PRIMARY KEY(TantargyID,SzakiranyID)
+);
+ALTER TABLE Hallgato ADD SzakiranyID int FOREIGN KEY REFERENCES Szakirany (SzakiranyID);
+
 class Tantargy
     {
         private int tantargyID;
@@ -1189,7 +1253,18 @@ public Form3()
                 MessageBox.Show("Csak 5 tantargyat lehet kijelolni");
             }
         }' id="7">
+		
 <input type="hidden" value='
+CREATE TABLE Muzeum(
+MuzeumID int PRIMARY KEY,
+MuzeumElnevezes nvarchar (250),
+Honlap nvarchar (250),
+Email nvarchar (250),
+Telefonszam nvarchar (50),
+VarosID int FOREIGN KEY REFERENCES Varos(VarosID)
+);
+ALTER TABLE Antikvitas ADD MuzeumID int FOREIGN KEY REFERENCES Muzeum (MuzeumID);
+
 Csinalni egy antikvitasok foldert es a kepeket belerakni
 
 class AntikvitasokTipusa
@@ -1417,6 +1492,24 @@ public Form3()
     }' id="8">
 	
 <input type="hidden" value='
+CREATE TABLE Jatekos(
+JatekosID int PRIMARY KEY,
+Keresztnev nvarchar (250),
+Vezeteknev nvarchar (250),
+SzuletesiDatum date,
+SzarmazasiOrszag int FOREIGN KEY REFERENCES Orszag(OrszagID)
+
+);
+CREATE TABLE Jatekos_Klub
+(
+KlubID int FOREIGN KEY REFERENCES Klub (KlubID),
+JatekosID int FOREIGN KEY REFERENCES Jatekos (JatekosID),
+KezdesDatum date NOT NULL,
+BefejezesDatum date,
+PRIMARY KEY (KlubID,JatekosID,KezdesDatum)
+);
+ALTER TABLE Jatekos_Klub ADD CONSTRAINT CHK_BefejezesDatum CHECK (BefejezesDatum < KezdesDatum);
+
 public Form1()
         {
             InitializeComponent();
@@ -1642,6 +1735,14 @@ public Form1()
         }
 ' id="9">
 <input type="hidden" value='
+CREATE TABLE Felszereles(
+FelszerelesID int PRIMARY KEY,
+Felszereles nvarchar (250),
+Leiras nvarchar (500)
+);
+ALTER TABLE Fogas ADD FelszerelesID int FOREIGN KEY REFERENCES Felszereles (FelszerelesID);
+
+
 class Varos
     {
         private int varosID;
@@ -1961,6 +2062,22 @@ public Form2()
      } ' id="10">
 	 
 <input type="hidden" value='
+CREATE TABLE Alkalmazott(
+AlkalmazottID int PRIMARY KEY,
+Keresztnev nvarchar(250),
+Vezeteknev nvarchar (250),
+Beosztas nvarchar(250)
+);
+CREATE TABLE Kolcsonzes(
+AlkalmazottID int FOREIGN KEY REFERENCES Alkalmazott(AlkalmazottID),
+KonyvID smallint FOREIGN KEY REFERENCES Konyv(KonyvID),
+KikolcsonzesDatuma date,
+VisszavivesDatuma date,
+PRIMARY KEY(AlkalmazottID,KonyvID,KikolcsonzesDatuma)
+);
+ALTER TABLE Kolcsonzes ADD CONSTRAINT CHK_Visszavives CHECK (VisszavivesDatuma > KikolcsonzesDatuma);
+ALTER TABLE Kiado ADD Cim nvarchar(250);
+
 class Szerzo
     {
         private int szerzoID;
@@ -2216,6 +2333,25 @@ public Form2()
     }' id="11">
 
 <input type="hidden" value='
+CREATE TABLE Jatekos(
+JatekosID int PRIMARY KEY,
+Keresztnev nvarchar (250),
+Vezeteknev nvarchar (250),
+SzuletesiDatum date,
+SzarmazasiOrszag int FOREIGN KEY REFERENCES Orszag(OrszagID)
+
+);
+CREATE TABLE Jatekos_Klub
+(
+KlubID int FOREIGN KEY REFERENCES Klub (KlubID),
+JatekosID int FOREIGN KEY REFERENCES Jatekos (JatekosID),
+KezdesDatum date NOT NULL,
+BefejezesDatum date,
+PRIMARY KEY (KlubID,JatekosID,KezdesDatum)
+);
+ALTER TABLE Jatekos_Klub ADD CONSTRAINT CHK_BefejezesDatum CHECK (BefejezesDatum < KezdesDatum);
+
+
 class Orszag
     {
         private int orszagID;
@@ -2554,6 +2690,23 @@ public partial class Form3 : Form
     }' id="12"> 
 	
 <input type="hidden" value='
+CREATE TABLE Alkalmazott(
+AlkalmazottID int PRIMARY KEY,
+Keresztnev nvarchar(250),
+Vezeteknev nvarchar(250),
+Cim nvarchar(250),
+Telefon nvarchar(100)
+);
+CREATE TABLE Kolcsonzes(
+FilmID int FOREIGN KEY REFERENCES Film(FilmID),
+AlkalmazottID int FOREIGN KEY REFERENCES Alkalmazott(AlkalmazottID),
+KikolcsonzesDatuma date,
+VisszahozasDatuma date,
+Statusz nvarchar(50),
+PRIMARY KEY(FilmID, AlkalmazottID, KikolcsonzesDatuma)
+);
+ALTER TABLE Szinesz ADD Becenev nvarchar(250);
+
 class Producer
     {
         private int producerID;
@@ -2750,6 +2903,17 @@ public Form2()
         }
     } ' id="13">
 <input type="hidden" value='
+ CREATE TABLE Tenyeszto(
+TenyesztoID int PRIMARY KEY,
+Nev nvarchar(250),
+Email nvarchar(250),
+Telefonszam nvarchar(250),
+Cim nvarchar(250),
+Orszag nvarchar(250)
+);
+ALTER TABLE Kutya ADD TenyesztoID int FOREIGN KEY REFERENCES Tenyeszto(TenyesztoID);
+ALTER TABLE Fajta ADD TovabbiJellemzok nvarchar(500);
+
 public partial class Form1 : Form
     {
         //SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=b1_b2;Integrated Security=True");
