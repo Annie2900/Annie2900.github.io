@@ -245,16 +245,398 @@ SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catal
 
 
 
-<input type="hidden" value="3" id="2">
-<input type="hidden" value="4" id="3">
-<input type="hidden" value="5" id="6">
-<input type="hidden" value="8" id="7">
-<input type="hidden" value="9" id="8">
-<input type="hidden" value="10" id="9">
-<input type="hidden" value="11" id="10">
-<input type="hidden" value="13" id="11">
-<input type="hidden" value="14" id="12">
-<input type="hidden" value="17" id="13">
+<input type="hidden" value='
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=T-12\SQLEXPRESS;Initial Catalog=a1-a2;Integrated Security=True");
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            listaFeltoltes();
+        }
+        private void listaFeltoltes()
+        {
+            try {
+                listView1.Clear();
+                listView1.View = View.Details;
+                listView1.FullRowSelect = true;
+
+                listView1.Columns.Add("Azonosito");
+                listView1.Columns.Add("Keresztnev",120);
+                listView1.Columns.Add("Vezeteknev",120);
+                listView1.Columns.Add("SzuletesiDatum",150);
+                listView1.Columns.Add("Cim");
+                listView1.Columns.Add("Titulus");
+
+                SqlCommand cmd = new SqlCommand("Select * from Szerzo", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        ListViewItem li = new ListViewItem(dr[0].ToString());
+                        li.SubItems.Add(dr[1].ToString());
+                        li.SubItems.Add(dr[2].ToString());
+                        li.SubItems.Add(dr[3].ToString());
+                        li.SubItems.Add(dr[4].ToString());
+                        li.SubItems.Add(dr[5].ToString());
+
+                        listView1.Items.Add(li);
+
+
+                    }
+
+                }
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+        private void mezokFeltoltese()
+        {
+            int id = Convert.ToInt32(listView1.FocusedItem.SubItems[0].Text);
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("Select * from Szerzo Where SzerzoID =@id",con);
+                cmd.Parameters.AddWithValue("@id", id);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        textBox1.Text = dr[0].ToString();
+                        textBox2.Text = dr[1].ToString();
+                        textBox3.Text = dr[2].ToString();
+                        if (dr[3] != DBNull.Value)
+                        {
+                            DateTime szd = Convert.ToDateTime(dr[3]);
+                            maskedTextBox1.Text = szd.ToString("dd/MM/yyyy");
+                        }
+                        else maskedTextBox1.Clear();
+                    }
+                }
+                else
+                {
+                    textBox1.Text = "";
+                    textBox2.Text = "";
+                    textBox3.Clear();
+                    maskedTextBox1.Text = "";
+                }
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mezokFeltoltese();
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            //torles
+            int id = Convert.ToInt32(listView1.FocusedItem.SubItems[0].Text);
+            try {
+                SqlCommand torles = new SqlCommand("Delete from Megirta where SzerzoID = @id",con);
+                SqlCommand torles2 = new SqlCommand("Delete from Szerzo where SzerzoID = @id", con);
+                torles2.Parameters.AddWithValue("@id", id);
+                torles.Parameters.AddWithValue("@id", id);
+                con.Open();
+                if (torles.ExecuteNonQuery() > 0)
+                {
+                    if (torles2.ExecuteNonQuery() > 0)
+                    {
+                        MessageBox.Show("SIKERULT");
+                    }
+                }
+                else MessageBox.Show("NEM SIKERULT");
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close();
+            listaFeltoltes();
+            }
+        }
+
+        private void toolStripButton5_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            Form2 f2 = new Form2();
+            f2.Show();
+        }
+
+ public Form2()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=T-12\SQLEXPRESS;Initial Catalog=a1-a2;Integrated Security=True");
+
+        private void comboFeltoltes()
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("Select SzerzoID, Keresztnev + MACSKA MACSKA + Vezeteknev as Nev from Szerzo order by Nev asc", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                comboBox1.ValueMember = "SzerzoID";
+                comboBox1.DisplayMember = "Nev";
+                comboBox1.DataSource = dt;
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            comboFeltoltes();
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string parancs = "SELECT     Year(Kikolcsonozte.KolcsonzesDatuma) as Ev, count (Kikolcsonozte.KonyvID)as Szam FROM         Kikolcsonozte INNER JOIN Megirta ON Kikolcsonozte.KonyvID = Megirta.KonyvID WHERE     (Megirta.SzerzoID = @id) AND Year(Kikolcsonozte.KolcsonzesDatuma)>=YEAR(GetDate()) - @idoszak group by Year(Kikolcsonozte.KolcsonzesDatuma)";
+            tablazatFeltoltes(parancs);
+            grafikon(parancs);
+        }
+        private void tablazatFeltoltes(string parancs)
+        {
+            try {
+                SqlCommand cmd = new SqlCommand(parancs, con);
+                cmd.Parameters.AddWithValue("@id", comboBox1.SelectedValue);
+                cmd.Parameters.AddWithValue("@idoszak", numericUpDown1.Value);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                dataGridView1.DataSource = dt;
+
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+        private void grafikon(string parancs)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand(parancs, con);
+                cmd.Parameters.AddWithValue("@id", comboBox1.SelectedValue);
+                cmd.Parameters.AddWithValue("@idoszak", numericUpDown1.Value);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+
+                chart1.Series.Clear();
+                chart1.Legends.Clear();
+
+                chart1.Series.Add("Szam");
+                chart1.Series["Szam"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+
+                while (dr.Read())
+                {
+                    chart1.Series["Szam"].Points.AddXY(dr[0], dr[1]);
+                }
+
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        } ' id="2">
+
+<input type="hidden" value='
+class Projekt
+    {
+        private int id;
+
+        public int Id
+        {
+            get { return id; }
+            set { id = value; }
+        }
+        private string elnevezes;
+
+        public string Elnevezes
+        {
+            get { return elnevezes; }
+            set { elnevezes = value; }
+        }
+        private DateTime kezdesDatum;
+
+        public DateTime KezdesDatum
+        {
+            get { return kezdesDatum; }
+            set { kezdesDatum = value; }
+        }
+        private double budget;
+
+        public double Budget
+        {
+            get { return budget; }
+            set { budget = value; }
+        }
+        private bool befejezett;
+
+        public bool Befejezett
+        {
+            get { return befejezett; }
+            set { befejezett = value; }
+        }
+        private string leiras;
+
+        public string Leiras
+        {
+            get { return leiras; }
+            set { leiras = value; }
+        }
+    }
+
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=T-12\SQLExpress;Initial Catalog=a3;Integrated Security=True");
+        List<Projekt> projektLista;
+        private void Lista()
+        {
+            projektLista = projektKiolvasas();
+            listView1.Clear();
+            listView1.View = View.Details;
+            listView1.FullRowSelect = true;
+
+            listView1.Columns.Add("Azonosito");
+            listView1.Columns.Add("Elnevezes");
+            listView1.Columns.Add("Kezdes datuma");
+            listView1.Columns.Add("Budget");
+            listView1.Columns.Add("Befejezett");
+            listView1.Columns.Add("Leiras");
+
+            foreach (Projekt p in projektLista)
+            {
+                ListViewItem li = new ListViewItem(p.Id.ToString());
+                li.SubItems.Add(p.Elnevezes);
+                li.SubItems.Add(p.KezdesDatum.ToString());
+                li.SubItems.Add(p.Budget.ToString());
+                li.SubItems.Add(p.Befejezett.ToString());
+                li.SubItems.Add(p.Leiras);
+                listView1.Items.Add(li);
+            }
+        }
+
+        private List<Projekt> projektKiolvasas()
+        {
+            projektLista = new List<Projekt>();
+            try {
+                SqlCommand cmd = new SqlCommand("Select * from Projekt",con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        Projekt p = new Projekt();
+                        p.Id = Convert.ToInt32(dr[0]);
+                        p.Elnevezes = dr[1].ToString();
+                        p.KezdesDatum = Convert.ToDateTime(dr[2]);
+                        p.Budget = Convert.ToDouble(dr[3]);
+                        p.Befejezett = Convert.ToBoolean(dr[4]);
+                        p.Leiras = dr[5].ToString();
+                        projektLista.Add(p);
+                    }
+                }
+
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+            return projektLista;
+ 
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            Lista();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedIndices.Count > 0)
+            {
+                try
+                {
+                    SqlCommand cmd = new SqlCommand("DELETE FROM Projekt WHERE ProjektID=@id", con);
+                    int id = Convert.ToInt32(listView1.FocusedItem.SubItems[0].Text);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    if (cmd.ExecuteNonQuery() > 0)
+                    {
+                        MessageBox.Show("Sikeres torles"); torles(id);
+                    }
+                    else { MessageBox.Show("Sikertelen torles"); }
+                }
+                catch (Exception x) { MessageBox.Show(x.Message); }
+                finally { 
+                    con.Close();
+                    Lista();
+                }
+            }
+            else { MessageBox.Show("Jelold ki."); }
+        }
+
+        private void torles(int id)
+        {
+            string eleresiUt = @"D:\4ITM\Oravec Anett\A3\A3\Log_" + DateTime.Now.Day + "_" + DateTime.Now.Month+ "_" + DateTime.Now.Year+".txt";
+            StreamWriter sw;
+            if (File.Exists(eleresiUt))
+            {
+                //file letezik vagyis hozza irunk
+                sw = File.AppendText(eleresiUt);
+
+            }
+            else
+            {
+                //file nem letezik, letrehozzuk is beleirjuk
+                sw = File.AppendText(eleresiUt);
+            }
+            foreach (Projekt p in projektLista)
+            {
+                if (p.Id == id) {
+                    sw.WriteLine(p.Id + " - " + p.Elnevezes);
+                    break;
+                }
+            }
+            sw.Close();
+        }
+        
+    }' id="3">
+<input type="hidden" value='' id="6">
+<input type="hidden" value='' id="7">
+<input type="hidden" value='' id="8">
+<input type="hidden" value='' id="9">
+<input type="hidden" value='' id="10">
+<input type="hidden" value='' id="11">
+<input type="hidden" value='' id="12">
+<input type="hidden" value='' id="13">
 
 <button style="color:#F8F8F8" onclick="myFunction1()">1</button>
 <button style="color:#F8F8F8" onclick="myFunction2()">2</button>
