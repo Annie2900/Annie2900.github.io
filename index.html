@@ -2109,11 +2109,12 @@ class Szerzo
             set { datum = value; }
         }
     }
+
 public Form1()
         {
             InitializeComponent();
         }
-        SqlConnection con = new SqlConnection(@"Data Source=DESKTOPDELL;Initial Catalog=a11;Integrated Security=True");
+        SqlConnection con = new SqlConnection(@"Data Source=.\SQLEXPRESS;Initial Catalog=a11;Integrated Security=True");
         List<Szerzo> szerzoLista;
         private List<Szerzo> szerzokiiras() {
             szerzoLista = new List<Szerzo>();
@@ -2154,20 +2155,26 @@ public Form1()
             listboxfeltoltes();
             button2.Enabled = false;
             button3.Enabled = false;
-            textBox1.Enabled = false;
+            
         }
         
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            szerzoLista=szerzokiiras();
+            button1.Enabled= true;
+            button2.Enabled = false;
+            button3.Enabled = false;
+
+            szerzoLista = szerzokiiras();
             int valasztottID = Convert.ToInt32(listBox1.SelectedIndex + 1);
-            foreach (Szerzo i in szerzoLista) {
-                if (valasztottID == i.SzerzoID) {
-                   
+            foreach (Szerzo i in szerzoLista)
+            {
+                if (valasztottID == i.SzerzoID)
+                {
+
                     textBox1.Text = i.SzerzoID.ToString();
                     textBox2.Text = i.Nev;
                     textBox3.Text = i.Vezeteknev;
-                        dateTimePicker1.Value=i.Datum;
+                    dateTimePicker1.Value = i.Datum;
                 }
             }
         }
@@ -2175,12 +2182,13 @@ public Form1()
         private void button1_Click(object sender, EventArgs e)
         {
             if (listBox1.SelectedIndex<0)
-                { MessageBox.Show("Válasszon ki egz sort"); }
+                { MessageBox.Show("Válasszon ki egy sort"); }
                 else
                 {
             button1.Enabled = false; 
             button2.Enabled = true;
             button3.Enabled = true;
+            textBox1.Text = "";
             textBox2.Text = "";
             textBox3.Text = "";
             dateTimePicker1.Value = DateTime.Now;
@@ -2210,12 +2218,12 @@ public Form1()
 
             try
             {
-               
-                
-                    SqlCommand cmd = new SqlCommand("update Szerzo set Nev=@nev, Vezeteknev=@vnev,SzuletesiDatum=@da where SzerzoID=@id", con);
+
+
+                SqlCommand cmd = new SqlCommand("INSERT INTO  Szerzo (Nev,Vezeteknev,SzuletesiDatum) VALUES (@nev,@vnev,@da) ", con);
                     cmd.Parameters.AddWithValue("@nev", textBox2.Text);
                     cmd.Parameters.AddWithValue("@vnev", textBox3.Text);
-                    cmd.Parameters.AddWithValue("@id", textBox1.Text);
+                  
 
                     cmd.Parameters.AddWithValue("@da", dateTimePicker1.Value);
                     con.Open();
@@ -2254,12 +2262,47 @@ public Form1()
             Form2 f2 = new Form2();
             f2.Show();
         }
-    }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                int keresettId = Convert.ToInt32(textBox1.Text);
+                int index = 0;
+                foreach (Szerzo i in szerzoLista)
+                {
+
+                    if (i.SzerzoID == keresettId)
+                    {
+
+                        textBox2.Text = i.Nev;
+                        textBox3.Text = i.Vezeteknev;
+                        dateTimePicker1.Value = i.Datum;
+                        break;
+                    }
+                   
+                    index++;
+                }
+
+
+            }
+            catch (FormatException)
+            {
+               
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+
+         
+        }
+
 public Form2()
         {
             InitializeComponent();
         }
-        SqlConnection con = new SqlConnection(@"Data Source=DESKTOPDELL;Initial Catalog=a11;Integrated Security=True");
+        SqlConnection con = new SqlConnection(@"Data Source=.\SQLEXPRESS;Initial Catalog=a11;Integrated Security=True");
         private void Form2_Load(object sender, EventArgs e)
         {
             checkbox();
@@ -2286,7 +2329,7 @@ public Form2()
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string SzerzoCsoport = " ";
+           
             if (checkedListBox1.CheckedItems.Count < 2)
             {
 
@@ -2295,16 +2338,18 @@ public Form2()
             }
             else
             {
+
                 if (checkedListBox1.CheckedItems.Count == 0) { MessageBox.Show("Jeloljon ki egy elemet"); }
                 else
                 {
+                    string SzerzoCsoport = " ";
                     for (int i = 0; i < checkedListBox1.CheckedItems.Count; i++)
                     {
-                        SzerzoCsoport += " MACSKA" + checkedListBox1.CheckedItems[i].ToString() + "MACSKA ,";
+                        SzerzoCsoport += "'" + checkedListBox1.CheckedItems[i].ToString() + "', ";
 
                     }
                     SzerzoCsoport = SzerzoCsoport.Remove(SzerzoCsoport.Length - 2);
-                    string parancs = "  SELECT         (Szerzo.Nev+MACSKA MACSKA+ Szerzo.Vezeteknev) as Neve ,sum(Szerzo_Kiadas.KiadasSzama) as kiadas FROM        Szerzo INNER JOIN                       Szerzo_Kiadas ON Szerzo.SzerzoID = Szerzo_Kiadas.SzerzoID 			 where  (Szerzo.Nev+MACSKA MACSKA+ Szerzo.Vezeteknev) in (" + SzerzoCsoport + ") group by Szerzo.Vezeteknev,Szerzo.Nev";
+                    string parancs = "  SELECT (Szerzo.Nev+' '+ Szerzo.Vezeteknev) as Neve ,sum(Szerzo_Kiadas.KiadasSzama) as kiadas FROM        Szerzo INNER JOIN                       Szerzo_Kiadas ON Szerzo.SzerzoID = Szerzo_Kiadas.SzerzoID 			 where  (Szerzo.Nev+' '+ Szerzo.Vezeteknev) in (" + SzerzoCsoport + ") group by Szerzo.Vezeteknev,Szerzo.Nev";
                     chart1.Series.Clear();
                     chart1.Series.Add("adatok");
                     chart1.Series["adatok"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column;
@@ -2329,6 +2374,11 @@ public Form2()
                     finally { con.Close(); }
                 }
             }
+        }
+
+        private void checkedListBox1_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            
         }
     }' id="11">
 
