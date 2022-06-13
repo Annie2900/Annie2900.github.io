@@ -2483,7 +2483,7 @@ public Form2()
 
                     }
                     SzerzoCsoport = SzerzoCsoport.Remove(SzerzoCsoport.Length - 2);
-                    string parancs = "  SELECT (Szerzo.Nev+' '+ Szerzo.Vezeteknev) as Neve ,sum(Szerzo_Kiadas.KiadasSzama) as kiadas FROM        Szerzo INNER JOIN                       Szerzo_Kiadas ON Szerzo.SzerzoID = Szerzo_Kiadas.SzerzoID 			 where  (Szerzo.Nev+' '+ Szerzo.Vezeteknev) in (" + SzerzoCsoport + ") group by Szerzo.Vezeteknev,Szerzo.Nev";
+                    string parancs = "  SELECT (Szerzo.Nev+MACSKA MACSKA+ Szerzo.Vezeteknev) as Neve ,sum(Szerzo_Kiadas.KiadasSzama) as kiadas FROM        Szerzo INNER JOIN                       Szerzo_Kiadas ON Szerzo.SzerzoID = Szerzo_Kiadas.SzerzoID 			 where  (Szerzo.Nev+MACSKA MACSKA+ Szerzo.Vezeteknev) in (" + SzerzoCsoport + ") group by Szerzo.Vezeteknev,Szerzo.Nev";
                     chart1.Series.Clear();
                     chart1.Series.Add("adatok");
                     chart1.Series["adatok"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column;
