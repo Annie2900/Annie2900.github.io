@@ -629,14 +629,2380 @@ public Form1()
         }
         
     }' id="3">
-<input type="hidden" value='' id="6">
-<input type="hidden" value='' id="7">
-<input type="hidden" value='' id="8">
-<input type="hidden" value='' id="9">
-<input type="hidden" value='' id="10">
-<input type="hidden" value='' id="11">
-<input type="hidden" value='' id="12">
-<input type="hidden" value='' id="13">
+	
+<input type="hidden" value='
+class Gyarto
+    {
+        private int id;
+
+        public int Id
+        {
+            get { return id; }
+            set { id = value; }
+        }
+        private string elnevezes;
+
+        public string Elnevezes
+        {
+            get { return elnevezes; }
+            set { elnevezes = value; }
+        } 
+    }
+class Modell
+    {
+        private int modellID;
+
+        public int ModellID
+        {
+            get { return modellID; }
+            set { modellID = value; }
+        }
+        private string modellElnevezes;
+
+        public string ModellElnevezes
+        {
+            get { return modellElnevezes; }
+            set { modellElnevezes = value; }
+        }
+        private Gyarto modellGyartoja;
+
+        internal Gyarto ModellGyartoja
+        {
+            get { return modellGyartoja; }
+            set { modellGyartoja = value; }
+        }
+    }
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=DESKTOP-ENVSSHH\SQLEXPRESS;Initial Catalog=a6;Integrated Security=True");
+
+        
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            comboFeltoltes();
+            
+            listBoxfeltoltes();
+        }
+
+        private List<Modell> modellLista;
+        private List<Modell> modellFeltoltes()
+        {
+            modellLista = new List<Modell>();
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("SELECT Modell.ModellID, Modell.Modell, Gyarto.GyartoID, Gyarto.Gyarto FROM Gyarto INNER JOIN Modell ON Gyarto.GyartoID = Modell.GyartoID order by Modell.Modell ASC", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        Modell m = new Modell();
+                        m.ModellID = Convert.ToInt32(dr[0]);
+                        m.ModellElnevezes = dr[1].ToString();
+                        Gyarto gy = new Gyarto();
+                        gy.Id = Convert.ToInt32(dr[2]);
+                        gy.Elnevezes = dr[3].ToString();
+                        m.ModellGyartoja = gy;
+                        modellLista.Add(m);
+                    }
+                }
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+
+            return modellLista;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void comboFeltoltes()
+        {
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("SELECT GyartoID, Gyarto from Gyarto order by Gyarto ASC", con);
+                
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                comboBox1.DisplayMember = "Gyarto";
+                comboBox1.ValueMember = "GyartoID";
+                comboBox1.DataSource = dt;
+
+                dr.Close();
+            }
+            catch (Exception x) 
+            { 
+                MessageBox.Show(x.Message); 
+            }
+            finally 
+            { 
+                con.Close(); 
+            }
+        }
+
+        private void listBoxfeltoltes()
+        {
+            modellLista = modellFeltoltes();
+            try
+            {
+                listBox1.Items.Clear();
+                foreach (Modell m in modellLista)
+                {
+                    string sor = m.ModellID.ToString("000") + MACSKA \t MACSKA + m.ModellElnevezes + " , " + m.ModellGyartoja.Elnevezes;
+                    listBox1.Items.Add(sor);
+                }
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }   
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            //KERESES
+            try
+            {
+                int keresettId = Convert.ToInt32(textBox2.Text);
+                int index = 0;
+                foreach (Modell m in modellLista)
+                {
+
+                    if (m.ModellID == keresettId)
+                    {
+                        //megtalaltuk ha ez lefut
+                        //meg kell jeleniteni azadatokat
+                        comboBox1.SelectedValue = m.ModellGyartoja.Id;
+                        textBox1.Text = m.ModellElnevezes;
+                        listBox1.SelectedIndex = index;
+                        break;
+                    }
+                    else 
+                    {
+                        textBox1.Text = "";
+                        comboBox1.SelectedIndex = 0;
+                        listBox1.SelectedIndex = -1;
+                    }
+                    index++;
+                }
+
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Csak szamot irthat.");
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //valtoztatas
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("UPDATE Modell SET Modell = @modell, GyartoID = @gyid WHERE ModellID = @id", con);
+                cmd.Parameters.AddWithValue("@modell",textBox1.Text);
+                cmd.Parameters.AddWithValue("@gyid", comboBox1.SelectedValue);
+                cmd.Parameters.AddWithValue("@id", Convert.ToInt32(textBox2.Text));
+                con.Open();
+                if (cmd.ExecuteNonQuery() > 0)
+                {
+                    MessageBox.Show("Sikeres valtoztatas.");
+                    
+                }
+                else MessageBox.Show("Sikertelen valtoztatas.");
+            }
+            catch (FormatException) { MessageBox.Show("Nem jo vazze."); }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close();  listBoxfeltoltes(); }
+        }
+
+        string lekerdezes = "SELECT Gyarto.Gyarto, count (Jarmu.JarmuID) as Szam FROM Gyarto INNER JOIN Modell ON Gyarto.GyartoID = Modell.GyartoID INNER JOIN Jarmu ON Modell.ModellID = Jarmu.ModellID WHERE (Jarmu.GyartasiEv >= @ettol) AND (Jarmu.GyartasiEv <= @eddig) AND (Jarmu.MegtettKM < @km) GROUP BY Gyarto.Gyarto";
+
+        private void tabPage2_Enter(object sender, EventArgs e)
+        {
+            numericUpDown1.Maximum = DateTime.Now.Year;
+            numericUpDown2.Maximum = DateTime.Now.Year;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            //listbox es a grafikon megjelenitese
+            try
+            {
+                // grafikon
+                chart1.Series.Clear();
+                chart1.Series.Add("autok");
+                chart1.Series["autok"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column;
+                //
+
+                SqlCommand cmd = new SqlCommand(lekerdezes, con);
+                cmd.Parameters.AddWithValue("@ettol", numericUpDown1.Value);
+                cmd.Parameters.AddWithValue("@eddig", numericUpDown2.Value);
+                cmd.Parameters.AddWithValue("@km", Convert.ToInt32(textBox3.Text));
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                listBox2.Items.Clear();
+                listBox2.Items.Add("Gyarto" + MACSKA \t MACSKA + MACSKA \t MACSKA + "Szam");
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+
+                        listBox2.Items.Add(dr[0].ToString() + " " + MACSKA \T MACSKA + MACSKA \t MACSKA +dr[1].ToString());
+                        //grafikon
+                        chart1.Series["autok"].Points.AddXY(dr[0].ToString(), dr[1].ToString());
+                    }
+                }
+                dr.Close();
+
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            tabControl1.SelectedIndex = 0;
+        }
+    } ' id="6">
+	
+<input type="hidden" value='
+class Tantargy
+    {
+        private int tantargyID;
+        private int tantargySifra;
+        private string tantargyElnevezes;
+        private int szemeszter;
+        private string leiras;
+
+        public int TantargyID
+        {
+            get
+            {
+                return tantargyID;
+            }
+
+            set
+            {
+                tantargyID = value;
+            }
+        }
+
+        public int TantargySifra
+        {
+            get
+            {
+                return tantargySifra;
+            }
+
+            set
+            {
+                tantargySifra = value;
+            }
+        }
+
+        public string TantargyElnevezes
+        {
+            get
+            {
+                return tantargyElnevezes;
+            }
+
+            set
+            {
+                tantargyElnevezes = value;
+            }
+        }
+
+        public int Szemeszter
+        {
+            get
+            {
+                return szemeszter;
+            }
+
+            set
+            {
+                szemeszter = value;
+            }
+        }
+
+        public string Leiras
+        {
+            get
+            {
+                return leiras;
+            }
+
+            set
+            {
+                leiras = value;
+            }
+        }
+
+public Form2()
+        {
+            InitializeComponent();
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            grid();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=221-Prof\sqlexpress;Initial Catalog=a7;Integrated Security=True");
+        List<Tantargy> tantargylista;
+        private List<Tantargy> tantargykiolvasas()
+        {
+            tantargylista = new List<Tantargy>();
+            try
+            {
+                SqlCommand cmd = new SqlCommand("SELECT * FROM Tantargy", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if(dr.HasRows)
+                {
+                    while(dr.Read())
+                    {
+                        Tantargy t = new Tantargy();
+                        t.TantargyID = Convert.ToInt32(dr[0]);
+                        t.TantargySifra= Convert.ToInt32(dr[1]);
+                        t.TantargyElnevezes = dr[2].ToString();
+                        t.Szemeszter = Convert.ToInt32(dr[3]);
+                        t.Leiras = dr[4].ToString();
+                        tantargylista.Add(t);
+                    }
+                }
+                dr.Close();
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+            return tantargylista;
+        }
+
+        private void grid()
+        {
+            tantargylista = tantargykiolvasas();
+            dataGridView1.DataSource = tantargylista;
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            Tantargy kijeloltTantargy = (Tantargy)dataGridView1.CurrentRow.DataBoundItem;
+            if (kijeloltTantargy != null) {
+                textBox1.Text = kijeloltTantargy.TantargyID.ToString();
+                textBox2.Text = kijeloltTantargy.TantargySifra.ToString();
+                textBox3.Text = kijeloltTantargy.TantargyElnevezes;
+                textBox4.Text = kijeloltTantargy.Szemeszter.ToString();
+                richTextBox1.Text = kijeloltTantargy.Leiras;
+            }
+        }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            Tantargy kijeloltTantargy = (Tantargy)dataGridView1.CurrentRow.DataBoundItem;
+
+            if (kijeloltTantargy != null)
+            {
+                textBox1.Text = kijeloltTantargy.TantargyID.ToString();
+                textBox2.Text = kijeloltTantargy.TantargySifra.ToString();
+                textBox3.Text = kijeloltTantargy.TantargyElnevezes;
+                textBox4.Text = kijeloltTantargy.Szemeszter.ToString();
+                richTextBox1.Text = kijeloltTantargy.Leiras;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //torles
+            try {
+                SqlCommand torles = new SqlCommand("DELETE Tantargy WHERE TantargyID=@id",con);
+                torles.Parameters.AddWithValue("@id", Convert.ToInt32(textBox1.Text));
+                con.Open();
+                if (torles.ExecuteNonQuery() > 0)
+                {
+                    MessageBox.Show("sikeres torles");
+                }
+                else
+                {
+                    MessageBox.Show("nem sikerult a torles");
+                }
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+                grid();
+                textBox1.Text = "";
+                textBox2.Text = "";
+                textBox3.Text = "";
+                textBox4.Text = "";
+                richTextBox1.Text = "";
+            }
+        }
+
+public Form3()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=221-Prof\sqlexpress;Initial Catalog=a7;Integrated Security=True");
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                SqlCommand tantargyak = new SqlCommand("SELECT Tantargy FROM Tantargy ORDER BY Tantargy ASC", con);
+                con.Open();
+                SqlDataReader dr = tantargyak.ExecuteReader();
+                while (dr.Read()) {
+                    checkedListBox1.Items.Add(dr[0].ToString());
+                }
+                dr.Close();
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string tantargyak = "";
+            int i;
+            for (i = 0; i < checkedListBox1.CheckedItems.Count; i++)
+            {
+                tantargyak += "MACSKA" + checkedListBox1.CheckedItems[i].ToString() + "MACSKA, ";
+            }
+            //kitorolni az utolso vesszot a tantargyak listajarol
+            tantargyak.Trim();
+            tantargyak = tantargyak.Remove(tantargyak.LastIndexOf(MACSKA , MACSKA));
+
+
+
+            string parancs = "SELECT     Tantargy.Tantargy, SUM(CASE WHEN Valasztott_Tantargy.LehallgatasEve=YEAR(GETDATE()) - 2 THEN 1 ELSE 0 END) AS [2020], SUM(CASE WHEN Valasztott_Tantargy.LehallgatasEve=YEAR(GETDATE()) - 1 THEN 1 ELSE 0 END) AS [2021], SUM(CASE WHEN Valasztott_Tantargy.LehallgatasEve=YEAR(GETDATE()) THEN 1 ELSE 0 END) AS [2022] FROM         Valasztott_Tantargy INNER JOIN Tantargy ON Valasztott_Tantargy.TantargyID = Tantargy.TantargyID WHERE     (Valasztott_Tantargy.Lehalgatta = N MACSKA da MACSKA) AND (Valasztott_Tantargy.LehallgatasEve >= YEAR(GETDATE()) - 2) AND Tantargy.Tantargy IN(" + tantargyak + ") GROUP BY Tantargy.Tantargy ORDER BY Tantargy.Tantargy";
+
+            grid(parancs);
+            chart(parancs);
+            
+        }
+
+        private void grid(string parancs)
+        {            
+            try {
+                SqlCommand cmd = new SqlCommand(parancs, con);              
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                dataGridView1.DataSource = dt;
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+        private void chart(string parancs)
+        {
+            chart1.Series.Clear();
+            chart1.Legends.Clear();
+            int ideiev = DateTime.Now.Year;
+            int elozoev1 = DateTime.Now.Year - 1;
+            int elozoev2 = DateTime.Now.Year - 2;
+            chart1.Series.Add(elozoev2.ToString());
+            chart1.Series.Add(elozoev1.ToString());
+            chart1.Series.Add(ideiev.ToString());
+            try {
+                SqlCommand cmd = new SqlCommand(parancs, con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                int i = 0;
+                while(dr.Read())
+                {
+                    chart1.Series[elozoev2.ToString()].Points.AddXY(dr[0], dr[1]);
+                    chart1.Series[elozoev1.ToString()].Points.AddXY(dr[0], dr[2]);
+                    chart1.Series[ideiev.ToString()].Points.AddXY(dr[0], dr[3]);
+
+                    chart1.Series[elozoev2.ToString()].Points[i].Label = dr[1].ToString();
+                    chart1.Series[elozoev1.ToString()].Points[i].Label = dr[2].ToString();
+                    chart1.Series[ideiev.ToString()].Points[i].Label = dr[3].ToString();
+
+                    chart1.Series[elozoev2.ToString()].Points[i].LegendText = elozoev2.ToString();
+                    chart1.Series[elozoev1.ToString()].Points[i].LegendText = elozoev1.ToString();
+                    chart1.Series[ideiev.ToString()].Points[i].LegendText = ideiev.ToString();
+                    i++;
+                }
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+       
+
+        private void checkedListBox1_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+           
+            if(e.NewValue == CheckState.Checked && checkedListBox1.CheckedItems.Count > 4)
+            {
+                e.NewValue = CheckState.Unchecked;
+                MessageBox.Show("Csak 5 tantargyat lehet kijelolni");
+            }
+        }' id="7">
+<input type="hidden" value='
+Csinalni egy antikvitasok foldert es a kepeket belerakni
+
+class AntikvitasokTipusa
+    {
+        private int iD;
+
+        public int ID
+        {
+            get { return iD; }
+            set { iD = value; }
+        }
+        private string tipus;
+
+        public string Tipus
+        {
+            get { return tipus; }
+            set { tipus = value; }
+        }
+        private string kep;
+
+        public string Kep
+        {
+            get { return kep; }
+            set { kep = value; }
+        }
+    }
+public Form2()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=DESKTOP-V9UQG64\SQLEXPRESS;Initial Catalog=a8;Integrated Security=True");
+        List<AntikvitasokTipusa> antikvitasokLista;
+        int index = 0;
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            mezokFeltoltese();
+            button2.Enabled = false;
+        }
+
+        private void mezokFeltoltese()
+        {
+            antikvitasokLista = listafeltoltes();
+            label2.Text = antikvitasokLista[index].ID.ToString();
+            textBox1.Text = antikvitasokLista[index].Tipus;
+            pictureBox1.BackgroundImage = Image.FromFile(antikvitasokLista[index].Kep);
+        }
+
+        private List<AntikvitasokTipusa> listafeltoltes()
+        {
+            antikvitasokLista = new List<AntikvitasokTipusa>();
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("Select * from Antikvitas_Tipusa", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        AntikvitasokTipusa at = new AntikvitasokTipusa();
+                        at.ID = Convert.ToInt32(dr[0]);
+                        at.Tipus = dr[1].ToString();
+                        if (dr[2] == DBNull.Value || String.IsNullOrEmpty(dr[2].ToString()))
+                        {
+                            at.Kep = @"D:\4itm\Anett\A8\A8\antikvitasok\" + "no_image.jpg";
+                        }
+                        else at.Kep = @"D:\4itm\Anett\A8\A8\antikvitasok\" + dr[2].ToString();
+                        antikvitasokLista.Add(at);
+
+                    }
+                }
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally 
+            {
+                con.Close();
+            }
+            return antikvitasokLista;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            index++;
+            if (index < antikvitasokLista.Count)
+            {
+                mezokFeltoltese();
+                button2.Enabled = true;
+                if (index == antikvitasokLista.Count - 1)
+                {
+                    button3.Enabled = false;
+                }               
+            }         
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            index--;
+            if (index >=0)
+            {
+                
+                mezokFeltoltese();
+                button3.Enabled = true;
+                if (index == 0)
+                {
+                    button2.Enabled = false;
+                }
+                
+            }
+        }
+
+        string fileName = "";
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SaveFileDialog kepFeltoltes = new SaveFileDialog();
+                kepFeltoltes.InitialDirectory = @"D:\4itm\Anett\A8\A8\antikvitasok\";
+                kepFeltoltes.DefaultExt = "jpg";
+                if (kepFeltoltes.ShowDialog() == DialogResult.OK)
+                {
+
+                    fileName = kepFeltoltes.InitialDirectory + Path.GetFileName(kepFeltoltes.FileName);
+                    if (fileName == null)
+                    {
+                        fileName = antikvitasokLista[index].Kep;
+                    }
+                    else
+                    {
+                        if (!File.Exists(fileName) && Path.GetExtension(fileName).Equals("jpg"))
+                        { File.Copy(kepFeltoltes.FileName, kepFeltoltes.InitialDirectory + fileName, true); }
+                    }
+                    
+
+                }
+
+                kepFeltoltes.Dispose();
+                pictureBox1.BackgroundImage = Image.FromFile(fileName);
+            }
+            catch (FileNotFoundException) { MessageBox.Show("FileNotFoundException hiba"); }
+            catch (IOException) { MessageBox.Show("Valasszon ki egy filet"); }
+            catch (OutOfMemoryException) { MessageBox.Show("OutOfMemoryException hiba"); }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("UPDATE Antikvitas_Tipusa  SET Tipus=@tipus, kep=@kep WHERE AntikvitasTipusaID=@id", con);
+                cmd.Parameters.AddWithValue("@tipus", textBox1.Text);
+                cmd.Parameters.AddWithValue("@kep", Path.GetFileName(fileName));
+                cmd.Parameters.AddWithValue("@id", Convert.ToInt32(label2.Text));
+                con.Open();
+                if (cmd.ExecuteNonQuery() > 0)
+                {
+                    MessageBox.Show("Sikeres");
+                }
+                else MessageBox.Show("Sikertelen");
+            }
+
+            catch (Exception x) {MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+    }
+public Form3()
+        {
+            InitializeComponent();
+        }
+
+        SqlConnection con = new SqlConnection(@"Data Source=DESKTOP-V9UQG64\SQLEXPRESS;Initial Catalog=a8;Integrated Security=True");
+
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            numericUpDown1.Maximum = 9999;
+            numericUpDown2.Maximum = 10000;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string parancs = "SELECT Varos.Varos, COUNT(Antikvitas.AntikvitasID) AS [Felfedezesek szam] FROM Antikvitas INNER JOIN Lelohely ON Antikvitas.LelohelyID = Lelohely.LelohelyID INNER JOIN Varos ON Lelohely.VarosID = Varos.VarosID WHERE (year(Antikvitas.MegtalalasDatuma) > @ev) GROUP BY Varos.Varos HAVING COUNT(Antikvitas.AntikvitasID) > @szam";
+                // grid
+                SqlCommand cmd = new SqlCommand(parancs,con);
+                cmd.Parameters.AddWithValue("@ev",numericUpDown1.Value);
+                cmd.Parameters.AddWithValue("@szam", numericUpDown2.Value);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                dataGridView1.DataSource = dt;
+                dr.Close();
+                //chart
+
+                chart1.Series.Clear();
+                chart1.Legends.Clear();
+                chart1.Series.Add("Felfedezes");
+                chart1.Series["Felfedezes"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column;
+
+                SqlCommand cmd1 = new SqlCommand(parancs, con);
+                cmd1.Parameters.AddWithValue("@ev", numericUpDown1.Value);
+                cmd1.Parameters.AddWithValue("@szam", numericUpDown2.Value);
+                SqlDataReader dr1 = cmd1.ExecuteReader();
+                if (dr1.HasRows)
+                {
+                    while (dr1.Read())
+                    {
+                        chart1.Series["Felfedezes"].Points.AddXY(dr1[0],dr1[1]);
+                    }
+                }
+                dr1.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally { con.Close();  }
+
+        }
+    }' id="8">
+	
+<input type="hidden" value='
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=a9;Integrated Security=True");
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabPage1_Enter(object sender, EventArgs e)
+        {
+            comboBox2.Enabled = false;
+            comboBox3.Enabled = false;
+            //orszagok
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("Select * from Orszag", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                //0.ik sok hozzaadasa
+                DataRow sor = dt.NewRow();
+                sor[0] = 0;
+                sor[1] = " - Osszes orszag - ";
+                dt.Rows.InsertAt(sor, 0);
+
+                comboBox1.DisplayMember= "Elnevezes";
+                comboBox1.ValueMember= "OrszagID";
+                comboBox1.DataSource = dt;
+
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedIndex > 0)
+            {
+                comboBox2.Enabled = true;
+                try
+                {
+                    SqlCommand varos = new SqlCommand("Select VarosID, Varos FROM Varos where OrszagID=@id", con);
+                    varos.Parameters.AddWithValue("@id", comboBox1.SelectedValue);
+                    con.Open();
+                    SqlDataReader dr = varos.ExecuteReader();
+                    DataTable dt = new DataTable();
+                    dt.Load(dr);
+
+                    //0.ik sok hozzaadasa
+                    DataRow sor = dt.NewRow();
+                    sor[0] = 0;
+                    sor[1] = " - Osszes varos - ";
+                    dt.Rows.InsertAt(sor, 0);
+
+                    comboBox2.DisplayMember = "Varos";
+                    comboBox2.ValueMember = "VarosID";
+                    comboBox2.DataSource = dt;
+
+                    dr.Close();
+                }
+                catch (Exception x)
+                {
+                    MessageBox.Show(x.Message);
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+            else 
+            {
+                comboBox2.Enabled = false;
+                comboBox3.Enabled = false;
+            }
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox2.SelectedIndex > 0)
+            {
+                comboBox3.Enabled = true;
+                try
+                {
+                    SqlCommand klub = new SqlCommand("SELECT     Klub.KlubID, Klub.KlubNev FROM         Klub INNER JOIN Stadion ON Klub.StadionID = Stadion.StadionID WHERE     (Stadion.VarosID = @id)", con);
+                    klub.Parameters.AddWithValue("@id", comboBox2.SelectedValue);
+                    if (con.State == ConnectionState.Closed)
+                    {
+                        con.Open();
+                    }
+                    
+                    SqlDataReader dr = klub.ExecuteReader();
+                    DataTable dt = new DataTable();
+                    dt.Load(dr);
+
+                    //0.ik sok hozzaadasa
+                    DataRow sor = dt.NewRow();
+                    sor[0] = 0;
+                    sor[1] = " - Osszes Klub - ";
+                    dt.Rows.InsertAt(sor, 0);
+
+                    comboBox3.DisplayMember = "KlubNev";
+                    comboBox3.ValueMember = "KlubID";
+                    comboBox3.DataSource = dt;
+
+                    dr.Close();
+                }
+                catch (Exception x)
+                {
+                    MessageBox.Show(x.Message);
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+            else
+            {
+                comboBox3.Enabled = false;
+            }
+        }
+
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //lebelek es a kep feltoltes
+            try
+            {
+                SqlCommand cmd = new SqlCommand("SELECT     Klub.KlubNev, Stadion.Elnevezes, Klub.Honlap, Klub.Cimer FROM         Klub INNER JOIN Stadion ON Klub.StadionID = Stadion.StadionID WHERE     (Klub.KlubID = @id)", con);
+                cmd.Parameters.AddWithValue("@id", comboBox3.SelectedValue);
+                if (con.State == ConnectionState.Closed)
+                {
+                    con.Open();
+                }
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        label3.Text = dr[0].ToString();
+                        label4.Text = dr[1].ToString();
+                        linkLabel1.Text = dr[2].ToString();
+                        pictureBox1.BackgroundImage = Image.FromFile(@"D:\4ITM\Oravec Anett\A9\A9\klubok\"+dr[3].ToString());
+                        pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
+                    }
+                }
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            comboBox1.SelectedIndex = 0;
+            comboBox2.SelectedIndex = 0;
+            comboBox3.SelectedIndex = 0;
+            label3.Text = "-";
+            label4.Text = "-";
+            linkLabel1.Text = "-";
+            pictureBox1.BackgroundImage = null;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            //listview feltoltes
+            try 
+            {
+                listView1.Clear();
+                listView1.View = View.Details;
+                listView1.Columns.Add("Stadion");
+                listView1.Columns.Add("Hazigazda");
+                listView1.Columns.Add("Golok");
+                listView1.Columns.Add("Vendeg Golok");
+                listView1.Columns.Add("Vendeg csapat");
+
+                SqlCommand cmd = new SqlCommand("SELECT Stadion.Elnevezes, a.KlubNev, Meccs.GolokHazigazda, Meccs.GolokVendeg, b.KlubNev FROM     Klub AS a INNER JOIN Meccs ON a.KlubID = Meccs.HazigazdaID INNER JOIN Klub AS b ON b.KlubID = Meccs.VendegID Inner JOIN Stadion ON a.StadionID = Stadion.StadionID WHERE    (Meccs.MeccsDatuma = @datum)", con);
+                cmd.Parameters.AddWithValue("@datum",dateTimePicker1.Value.ToShortDateString());
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        ListViewItem i = new ListViewItem(dr[0].ToString());
+                        i.SubItems.Add(dr[1].ToString());
+                        i.SubItems.Add(dr[2].ToString());
+                        i.SubItems.Add(dr[3].ToString());
+                        i.SubItems.Add(dr[4].ToString());
+                        listView1.Items.Add(i);
+                    }
+                }
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close();  }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+' id="9">
+<input type="hidden" value='
+class Varos
+    {
+        private int varosID;
+
+        public int VarosID
+        {
+            get { return varosID; }
+            set { varosID = value; }
+        }
+        private string elnevezes;
+
+        public string Elnevezes
+        {
+            get { return elnevezes; }
+            set { elnevezes = value; }
+        }
+        private string hivoszam;
+
+        public string Hivoszam
+        {
+            get { return hivoszam; }
+            set { hivoszam = value; }
+        }
+        private int iranyitoszam;
+
+        public int Iranyitoszam
+        {
+            get { return iranyitoszam; }
+            set { iranyitoszam = value; }
+        }
+        private int lakosokSzama;
+
+        public int LakosokSzama
+        {
+            get { return lakosokSzama; }
+            set { lakosokSzama = value; }
+        }
+    }
+class Horgasz
+    {
+        private int horgaszID;
+
+        public int HorgaszID
+        {
+            get { return horgaszID; }
+            set { horgaszID = value; }
+        }
+        private string keresztnev;
+
+        public string Keresztnev
+        {
+            get { return keresztnev; }
+            set { keresztnev = value; }
+        }
+        private string vezeteknev;
+
+        public string Vezeteknev
+        {
+            get { return vezeteknev; }
+            set { vezeteknev = value; }
+        }
+        private string cim;
+
+        public string Cim
+        {
+            get { return cim; }
+            set { cim = value; }
+        }
+        private string telefon;
+
+        public string Telefon
+        {
+            get { return telefon; }
+            set { telefon = value; }
+        }
+        private Varos varos;
+
+        internal Varos Varos
+        {
+            get { return varos; }
+            set { varos = value; }
+        }
+    }
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=a10;Integrated Security=True");
+        List<Horgasz> horgaszLista;
+        int i = 0;
+
+        private List<Horgasz> horgaszKiolvasas()
+        {
+            horgaszLista = new List<Horgasz>();
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("SELECT     Horgasz.HorgaszID, Horgasz.Keresztnev, Horgasz.Vezeteknev, Horgasz.Cim, Horgasz.VarosID, Varos.Varos, Horgasz.Telefon FROM         Horgasz INNER JOIN Varos ON Horgasz.VarosID = Varos.VarosID", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        Horgasz h = new Horgasz();
+                        h.HorgaszID = Convert.ToInt32(dr[0]);
+                        h.Keresztnev = dr[1].ToString();
+                        h.Vezeteknev = dr[2].ToString();
+                        h.Cim = dr[3].ToString();
+                        Varos v = new Varos();
+                        v.VarosID = Convert.ToInt32(dr[4]);
+                        v.Elnevezes = dr[5].ToString();
+                        h.Varos = v;
+                        h.Telefon = dr[6].ToString();
+                        //ha kesz horgasz felkerul a listara
+                        horgaszLista.Add(h);
+
+                    }
+                }
+
+                dr.Close();
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close();  }
+
+
+            return horgaszLista;
+        }
+
+        private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            listboxFeltoltes();
+            comboFeltoltes();
+            mezokKFeltoltese(0);
+            textBox1.Enabled = false;
+        }
+        private void listboxFeltoltes()
+        {
+            horgaszLista = horgaszKiolvasas();
+            listBox1.Items.Clear();
+            foreach(Horgasz h in horgaszLista)
+            {
+                listBox1.Items.Add(h.HorgaszID + "\t\t" + h.Keresztnev + "\t\t" + h.Vezeteknev + "\t\t" + h.Cim + "\t\t" + h.Varos.Elnevezes + "\t\t" + h.Telefon);
+
+            }
+        }
+        private void comboFeltoltes()
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("SELECT VarosID, Varos from Varos ORDER BY Varos ASC", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                comboBox1.DisplayMember = "Varos";
+                comboBox1.ValueMember = "VarosID";
+                comboBox1.DataSource = dt;
+
+                dr.Close();
+
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            Form2 F2 = new Form2();
+            F2.Show();
+        }
+        private void mezokKFeltoltese(int index)
+        {
+            textBox1.Text = horgaszLista[index].HorgaszID.ToString();
+            textBox2.Text = horgaszLista[index].Keresztnev.ToString();
+            textBox3.Text = horgaszLista[index].Vezeteknev.ToString();
+            textBox4.Text = horgaszLista[index].Cim.ToString();
+            comboBox1.SelectedValue = horgaszLista[index].Varos.VarosID;
+            textBox5.Text = horgaszLista[index].Telefon.ToString();
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mezokKFeltoltese(listBox1.SelectedIndex);
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            //update
+            try
+            {
+                SqlCommand cmd = new SqlCommand("UPDATE Horgasz SET Keresztnev=@knev, Vezeteknev=@vnev, Cim=@cim, Telefon=@telefon, VarosID= @vid WHERE HorgaszID=@hid", con);
+                cmd.Parameters.AddWithValue("@hid", Convert.ToInt32(textBox1.Text));
+                cmd.Parameters.AddWithValue("@knev", textBox2.Text);
+                cmd.Parameters.AddWithValue("@vnev", textBox3.Text);
+                cmd.Parameters.AddWithValue("@cim", textBox4.Text);
+                cmd.Parameters.AddWithValue("@telefon", textBox5.Text);
+                cmd.Parameters.AddWithValue("@vid", comboBox1.SelectedValue);
+                con.Open();
+                if (cmd.ExecuteNonQuery() > 0)
+                {
+                    MessageBox.Show("Sikerult");
+                }
+                else MessageBox.Show("Nem sikerult");
+            }
+            catch (FormatException ) { MessageBox.Show("Hibas adattipus"); }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close();
+            listboxFeltoltes();
+            }
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            Form3 F3 = new Form3();
+            F3.Show();
+        }
+public Form2()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=a10;Integrated Security=True");
+
+        private void comboFeltoltes()
+        {
+            try 
+            {
+                SqlCommand cmd = new SqlCommand("Select HorgaszID,  cast(HorgaszID AS NVARCHAR) + MACSKA - MACSKA + Keresztnev + MACSKA - MACSKA + Vezeteknev AS Nev from Horgasz", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                DataRow row = dt.NewRow();
+                row[0] = 0;
+                row[1] = "Horgasz kivalasztasa - ";
+                dt.Rows.InsertAt(row, 0);
+
+                comboBox1.DisplayMember = "Nev";
+                comboBox1.ValueMember = "HorgaszID";
+                comboBox1.DataSource = dt;
+                dr.Close();
+
+                
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            comboFeltoltes();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string parancs = "SELECT     HalFajta.Elnevezes, COUNT(*) AS [Halak szama] FROM Fogas INNER JOIN HalFajta ON Fogas.FajtaID = HalFajta.FajtaID WHERE     (Fogas.HorgaszID = @id) AND (Fogas.Datum >= @ettol) AND (Fogas.Datum <= @eddig) GROUP BY  HalFajta.Elnevezes";
+
+            try 
+            {
+                SqlCommand tabla = new SqlCommand(parancs, con);
+                tabla.Parameters.AddWithValue("@id", comboBox1.SelectedValue);
+                tabla.Parameters.AddWithValue("@ettol", dateTimePicker1.Value);
+                tabla.Parameters.AddWithValue("@eddig", dateTimePicker2.Value);
+                con.Open();
+                SqlDataReader dr = tabla.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                dataGridView1.DataSource= dt;
+                dr.Close();
+
+                //diagram
+                SqlCommand diagram = new SqlCommand(parancs, con);
+                diagram.Parameters.AddWithValue("@id", comboBox1.SelectedValue);
+                diagram.Parameters.AddWithValue("@ettol", dateTimePicker1.Value);
+                diagram.Parameters.AddWithValue("@eddig", dateTimePicker2.Value);
+
+                SqlDataReader dr1 = diagram.ExecuteReader();
+                chart1.Series.Clear();
+                chart1.Legends.Clear();
+                chart1.Series.Add("adatok");
+                chart1.Legends.Add("halak");
+                chart1.Series["adatok"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+
+                int i = 0;
+                if(dr1.HasRows)
+                {
+                    while (dr1.Read())
+                    {
+                        chart1.Series["adatok"].Points.AddXY(dr1[0], dr1[1]);
+                        chart1.Series["adatok"].Points[i].Label = dr1[1].ToString();
+                        chart1.Series["adatok"].Points[i].LegendText = dr1[0].ToString();
+                        i++;
+                    }
+                }
+                dr1.Close();
+            }
+            catch (Exception x) { MessageBox.Show (x.Message); }
+            finally { con.Close(); }
+        }
+     } ' id="10">
+	 
+<input type="hidden" value='
+class Szerzo
+    {
+        private int szerzoID;
+
+        public int SzerzoID
+        {
+            get { return szerzoID; }
+            set { szerzoID = value; }
+        }
+        private string nev;
+
+        public string Nev
+        {
+            get { return nev; }
+            set { nev = value; }
+        }
+        private string vezeteknev;
+
+        public string Vezeteknev
+        {
+            get { return vezeteknev; }
+            set { vezeteknev = value; }
+        }
+        private DateTime datum;
+
+        public DateTime Datum
+        {
+            get { return datum; }
+            set { datum = value; }
+        }
+    }
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=DESKTOPDELL;Initial Catalog=a11;Integrated Security=True");
+        List<Szerzo> szerzoLista;
+        private List<Szerzo> szerzokiiras() {
+            szerzoLista = new List<Szerzo>();
+            try
+            {
+                SqlCommand cmd = new SqlCommand("Select * from Szerzo", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows) {
+                    while (dr.Read()) {
+                        Szerzo sz = new Szerzo();
+                        sz.SzerzoID = Convert.ToInt32(dr[0]);
+                        sz.Nev = dr[1].ToString();
+                        sz.Vezeteknev = dr[2].ToString();
+                        sz.Datum = Convert.ToDateTime(dr[3]);
+                        szerzoLista.Add(sz);
+                    
+                    }
+                }
+                dr.Close();
+            }
+            catch (Exception e) { MessageBox.Show(e.Message); }
+            finally { con.Close(); }
+            return szerzoLista;
+        }
+        private void listboxfeltoltes() {
+            listBox1.Items.Clear();
+            szerzoLista = szerzokiiras();
+            foreach (Szerzo i in szerzoLista) {
+                listBox1.Items.Add(i.SzerzoID + " \t\t" + i.Nev + "\t\t " + i.Vezeteknev + " \t\t" + i.Datum);
+            
+            }
+        
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            listboxfeltoltes();
+            button2.Enabled = false;
+            button3.Enabled = false;
+            textBox1.Enabled = false;
+        }
+        
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            szerzoLista=szerzokiiras();
+            int valasztottID = Convert.ToInt32(listBox1.SelectedIndex + 1);
+            foreach (Szerzo i in szerzoLista) {
+                if (valasztottID == i.SzerzoID) {
+                   
+                    textBox1.Text = i.SzerzoID.ToString();
+                    textBox2.Text = i.Nev;
+                    textBox3.Text = i.Vezeteknev;
+                        dateTimePicker1.Value=i.Datum;
+                }
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedIndex<0)
+                { MessageBox.Show("Válasszon ki egz sort"); }
+                else
+                {
+            button1.Enabled = false; 
+            button2.Enabled = true;
+            button3.Enabled = true;
+            textBox2.Text = "";
+            textBox3.Text = "";
+            dateTimePicker1.Value = DateTime.Now;
+        }}
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            button1.Enabled = true;
+            button2.Enabled = false;
+            button3.Enabled = false;
+            int valasztottID = Convert.ToInt32(listBox1.SelectedIndex + 1);
+            foreach (Szerzo i in szerzoLista)
+            {
+                if (valasztottID == i.SzerzoID)
+                {
+
+                    textBox1.Text = i.SzerzoID.ToString();
+                    textBox2.Text = i.Nev;
+                    textBox3.Text = i.Vezeteknev;
+                    dateTimePicker1.Value = i.Datum;
+                }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+               
+                
+                    SqlCommand cmd = new SqlCommand("update Szerzo set Nev=@nev, Vezeteknev=@vnev,SzuletesiDatum=@da where SzerzoID=@id", con);
+                    cmd.Parameters.AddWithValue("@nev", textBox2.Text);
+                    cmd.Parameters.AddWithValue("@vnev", textBox3.Text);
+                    cmd.Parameters.AddWithValue("@id", textBox1.Text);
+
+                    cmd.Parameters.AddWithValue("@da", dateTimePicker1.Value);
+                    con.Open();
+
+                    if (cmd.ExecuteNonQuery() > 0)
+                    {
+                        MessageBox.Show("Sikeres frissites");
+
+                    }
+                    else
+                    {
+                        MessageBox.Show("Sikertelen frissites");
+                    }
+
+                
+        }
+            catch (Exception r) { MessageBox.Show(r.Message); }
+                finally
+                {
+                    con.Close(); listboxfeltoltes();
+                    button1.Enabled = true;
+                    button2.Enabled = false;
+                    button3.Enabled = false;
+}
+            
+}
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            Form2 f2 = new Form2();
+            f2.Show();
+        }
+    }
+public Form2()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=DESKTOPDELL;Initial Catalog=a11;Integrated Security=True");
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            checkbox();
+        }
+        private void checkbox() {
+
+            try
+            {
+                SqlCommand cmd = new SqlCommand("Select * from Szerzo order by Vezeteknev", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        checkedListBox1.Items.Add(dr[1]+" "+dr[2]);
+                    }
+                }
+                dr.Close();
+            }
+            catch (Exception e) { MessageBox.Show(e.Message); }
+            finally { con.Close(); }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string SzerzoCsoport = " ";
+            if (checkedListBox1.CheckedItems.Count < 2)
+            {
+
+                MessageBox.Show(" 2 tantargyat kell kijelolni");
+
+            }
+            else
+            {
+                if (checkedListBox1.CheckedItems.Count == 0) { MessageBox.Show("Jeloljon ki egy elemet"); }
+                else
+                {
+                    for (int i = 0; i < checkedListBox1.CheckedItems.Count; i++)
+                    {
+                        SzerzoCsoport += " MACSKA" + checkedListBox1.CheckedItems[i].ToString() + "MACSKA ,";
+
+                    }
+                    SzerzoCsoport = SzerzoCsoport.Remove(SzerzoCsoport.Length - 2);
+                    string parancs = "  SELECT         (Szerzo.Nev+MACSKA MACSKA+ Szerzo.Vezeteknev) as Neve ,sum(Szerzo_Kiadas.KiadasSzama) as kiadas FROM        Szerzo INNER JOIN                       Szerzo_Kiadas ON Szerzo.SzerzoID = Szerzo_Kiadas.SzerzoID 			 where  (Szerzo.Nev+MACSKA MACSKA+ Szerzo.Vezeteknev) in (" + SzerzoCsoport + ") group by Szerzo.Vezeteknev,Szerzo.Nev";
+                    chart1.Series.Clear();
+                    chart1.Series.Add("adatok");
+                    chart1.Series["adatok"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column;
+                    chart1.ChartAreas["ChartArea1"].AxisX.Interval = 1;
+                    try
+                    {
+                        SqlCommand cmd = new SqlCommand(parancs, con);
+                        con.Open();
+                        SqlDataReader dr = cmd.ExecuteReader();
+                        if (dr.HasRows)
+                        {
+                            while (dr.Read())
+                            {
+                                chart1.Series["adatok"].Points.AddXY(dr[0], dr[1]);
+
+                            }
+                        }
+                        dr.Close();
+                    }
+                    catch (Exception r) { MessageBox.Show(r.Message); }
+
+                    finally { con.Close(); }
+                }
+            }
+        }
+    }' id="11">
+
+<input type="hidden" value='
+class Orszag
+    {
+        private int orszagID;
+
+        public int OrszagID
+        {
+            get { return orszagID; }
+            set { orszagID = value; }
+        }
+        private string orszagNeve;
+
+        public string OrszagNeve
+        {
+            get { return orszagNeve; }
+            set { orszagNeve = value; }
+        }
+    }
+class Varos
+    {
+        private int varosID;
+
+        public int VarosID
+        {
+            get { return varosID; }
+            set { varosID = value; }
+        }
+        private string varosNeve;
+
+        public string VarosNeve
+        {
+            get { return varosNeve; }
+            set { varosNeve = value; }
+        }
+        private Orszag orszaga;
+
+        internal Orszag Orszaga
+        {
+            get { return orszaga; }
+            set { orszaga = value; }
+        }
+    }
+class Stadion
+    {
+        private int stadionID;
+
+        public int StadionID
+        {
+            get { return stadionID; }
+            set { stadionID = value; }
+        }
+        private string elnevezes;
+
+        public string Elnevezes
+        {
+            get { return elnevezes; }
+            set { elnevezes = value; }
+        }
+        private string cim;
+
+        public string Cim
+        {
+            get { return cim; }
+            set { cim = value; }
+        }
+        private int kapacitas;
+
+        public int Kapacitas
+        {
+            get { return kapacitas; }
+            set { kapacitas = value; }
+        }
+        private int bejaratokSzama;
+
+        public int BejaratokSzama
+        {
+            get { return bejaratokSzama; }
+            set { bejaratokSzama = value; }
+        }
+        private Varos varosa;
+
+        internal Varos Varosa
+        {
+            get { return varosa; }
+            set { varosa = value; }
+        }
+    }
+public partial class Form1 : Form
+    {
+        new SqlConnection con = new SqlConnection(@"Data Source=T-11\SQLEXPRESS;Initial Catalog=a12;Integrated Security=True");
+        List<Stadion> lista = new List<Stadion>();
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            textBox1.Enabled = false;
+            numericUpDown1.Maximum = 5000000;
+            numericUpDown2.Maximum = 5000000;
+            listViewFeltoltes(Form2.keresettOrszag);
+            comboFeltoltes();
+        }
+        private List<Stadion>  stadionKiolvasas()
+        {
+
+            try
+            {
+        
+                SqlCommand cmd = new SqlCommand("SELECT Stadion.*, Varos.Varos, Orszag.Elnevezes AS Orszag FROM Orszag INNER JOIN Varos ON Orszag.OrszagID = Varos.OrszagID INNER JOIN Stadion ON Varos.VarosID = Stadion.VarosID",con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        Stadion s = new Stadion();
+                        s.StadionID = Convert.ToInt32(dr[0]);
+                        s.Elnevezes = dr[1].ToString();
+                        s.Cim = dr[2].ToString();
+                        s.Kapacitas = Convert.ToInt32(dr[3]);
+                        s.BejaratokSzama = Convert.ToInt32(dr[4]);
+                        Varos v = new Varos();
+                        v.VarosID = Convert.ToInt32(dr[5]);
+                        v.VarosNeve = dr[6].ToString();
+                        s.Varosa= v;
+                        Orszag o = new Orszag();                 
+                        o.OrszagNeve = dr[7].ToString();
+                        v.Orszaga = o;
+                        lista.Add(s);
+                    }
+                }           
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+            return lista;
+        }
+
+        private void comboFeltoltes()
+        {
+            try
+            {
+                SqlCommand varosok = new SqlCommand("Select VarosID,Varos FROM Varos ORder by Varos", con);
+                con.Open();
+                SqlDataReader dr = varosok.ExecuteReader();
+                DataTable dt= new DataTable();
+                dt.Load(dr);
+                comboBox1.ValueMember = "VarosID";
+                comboBox1.DisplayMember = "Varos";
+                comboBox1.DataSource = dt;
+                dr.Close();
+
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void listViewFeltoltes(string keresettOrszag)
+        {
+            lista = stadionKiolvasas();
+                listView1.Clear();
+                listView1.View = View.Details;
+                listView1.FullRowSelect = true;
+                listView1.Columns.Add("Azonosito");
+                listView1.Columns.Add("Elnevezes",150);
+                listView1.Columns.Add("Varos",100);
+                listView1.Columns.Add("Cim",150);
+                listView1.Columns.Add("Kapacitas",100);
+                listView1.Columns.Add("Bejaratok szama",150);
+                foreach (Stadion s in lista)
+                {
+                    if (!String.IsNullOrEmpty(keresettOrszag))
+                    {
+                        if (s.Varosa.Orszaga.OrszagNeve.Equals(keresettOrszag))
+                        {
+                            ListViewItem li = new ListViewItem(s.StadionID.ToString());
+                            li.SubItems.Add(s.Elnevezes);
+                            li.SubItems.Add(s.Varosa.VarosNeve);
+                            li.SubItems.Add(s.Cim);
+                            li.SubItems.Add(s.Kapacitas.ToString());
+                            li.SubItems.Add(s.BejaratokSzama.ToString());
+                            listView1.Items.Add(li);
+                        }
+                    }
+                    else
+                    {
+                        ListViewItem li = new ListViewItem(s.StadionID.ToString());
+                        li.SubItems.Add(s.Elnevezes);
+                        li.SubItems.Add(s.Varosa.VarosNeve);
+                        li.SubItems.Add(s.Cim);
+                        li.SubItems.Add(s.Kapacitas.ToString());
+                        li.SubItems.Add(s.BejaratokSzama.ToString());
+                        listView1.Items.Add(li);
+                    }
+                }       
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Form2 keresesForm = new Form2();
+            keresesForm.Show();
+            this.Close();
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int id =Convert.ToInt32( listView1.FocusedItem.SubItems[0].Text);
+            foreach (Stadion i in lista)
+            {
+                if(i.StadionID==id){
+                textBox1.Text = i.StadionID.ToString();
+                textBox2.Text = i.Elnevezes;
+                textBox3.Text = i.Cim;
+                numericUpDown1.Value = i.Kapacitas;
+                numericUpDown2.Value = i.BejaratokSzama;
+                comboBox1.SelectedValue = i.Varosa.VarosID;
+            }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+              try
+            {
+                SqlCommand cmd = new SqlCommand("UPDATE Stadion SET Elnevezes = @eln, Cim = @cim, Kapacitas=@kap, BejaratokSzama=@bej, VarosID=@varos WHERE StadionID=@stadID", con);
+                cmd.Parameters.AddWithValue("@stadID", Convert.ToInt32(textBox1.Text));
+                cmd.Parameters.AddWithValue("@eln", textBox2.Text);
+                cmd.Parameters.AddWithValue("@cim", textBox3.Text);
+                cmd.Parameters.AddWithValue("@kap", numericUpDown1.Value);
+                cmd.Parameters.AddWithValue("@bej", numericUpDown2.Value);
+                cmd.Parameters.AddWithValue("@varos", comboBox1.SelectedValue);
+                con.Open();
+                if (cmd.ExecuteNonQuery() > 0)
+                {
+                    MessageBox.Show("Sikeres valtoztatas");
+                }
+                else
+                {
+                    MessageBox.Show("Sikertelen valtoztatas");
+                }
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+                listViewFeltoltes(Form2.keresettOrszag);
+            }
+            
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Form3 f3 = new Form3();
+            f3.Show();
+        }
+    }
+public Form2()
+        {
+            InitializeComponent();
+        }
+        public static string keresettOrszag = "";
+        Form1 f1 = new Form1();
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            keresettOrszag = textBox1.Text;
+            f1.Show();
+            this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            keresettOrszag = "";
+            f1.Show();
+            this.Close();
+        }
+public partial class Form3 : Form
+    {
+        new SqlConnection con = new SqlConnection(@"Data Source=T-11\SQLEXPRESS;Initial Catalog=a12;Integrated Security=True");
+        public Form3()
+        {
+            InitializeComponent();
+        }
+        private void chartFeltoltes()
+        {
+            
+                chart1.Series.Clear();
+                chart1.Series.Add("meccs");
+                chart1.Series["meccs"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column;
+                chart1.ChartAreas["ChartArea1"].AxisX.Interval = 1;
+                string parancs = "SELECT TOP 10 Stadion.Elnevezes,Count(Meccs.MeccsID) AS Szam FROM Meccs INNER JOIN Klub ON Meccs.HazigazdaID = Klub.KlubID INNER JOIN Stadion ON Klub.StadionID = Stadion.StadionID WHERE (YEAR(Meccs.MeccsDatuma) = YEAR(GETDATE())) GROUP BY Stadion.Elnevezes";
+
+            try
+            {
+                SqlCommand cmd = new SqlCommand(parancs, con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if(dr.HasRows)
+                {
+                    while(dr.Read())
+                    {
+                        chart1.Series["meccs"].Points.AddXY(dr[0].ToString(), dr[1]);
+                    }
+                }
+                dr.Close(); 
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            chartFeltoltes();
+        }
+    }' id="12"> 
+	
+<input type="hidden" value='
+class Producer
+    {
+        private int producerID;
+        private string elnevezes;
+        private string email;
+    
+
+        public int ProducerID
+        {
+            get
+            {
+                return producerID;
+            }
+
+            set
+            {
+                producerID = value;
+            }
+        }
+
+        public string Elnevezes
+        {
+            get
+            {
+                return elnevezes;
+            }
+
+            set
+            {
+                elnevezes = value;
+            }
+        }
+
+        public string Email
+        {
+            get
+            {
+                return email;
+            }
+
+            set
+            {
+                email = value;
+            }
+        }       
+    }
+public Form1()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=221-PROF\SQLEXPRESS;Initial Catalog=a13;Integrated Security=True");
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            textBox1.Enabled = false;
+            kiiras();
+            mezokitoltes(0);
+        }
+        List<Producer> producerLista;
+
+        private List<Producer> producerKiolvasas()
+        {
+            producerLista = new List<Producer>();
+            try
+            {
+                SqlCommand cmd = new SqlCommand("SELECT * FROM Producer", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                if(dr.HasRows)
+                {
+                    while(dr.Read())
+                    {
+                        Producer p = new Producer();
+                        p.ProducerID = Convert.ToInt32(dr[0]);
+                        p.Elnevezes = dr[1].ToString();
+                        p.Email = dr[2].ToString();
+                        producerLista.Add(p);
+                    }
+                }
+                dr.Close();
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+            return producerLista;
+        }
+
+        private void kiiras()
+        {
+            listBox1.Items.Clear();
+            producerLista = producerKiolvasas();
+            foreach(Producer p in producerLista)
+            {
+                listBox1.Items.Add(p.ProducerID + "\t" + p.Elnevezes + "\t\t" + p.Email);
+            }
+        }
+
+        private void mezokitoltes(int i)
+        {
+            textBox1.Text = producerLista[i].ProducerID.ToString();
+            textBox2.Text = producerLista[i].Elnevezes;
+            textBox3.Text = producerLista[i].Email;
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mezokitoltes(listBox1.SelectedIndex);
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            try {
+                SqlCommand cmd = new SqlCommand("UPDATE Producer SET Nev=@nev, Email=@email WHERE ProducerID=@id", con);
+                cmd.Parameters.AddWithValue("@nev", textBox2.Text);
+                cmd.Parameters.AddWithValue("@email", textBox3.Text);
+                cmd.Parameters.AddWithValue("@id", Convert.ToInt32(textBox1.Text));
+                con.Open();
+                if (cmd.ExecuteNonQuery() > 0)
+                    MessageBox.Show("Sikeres valtoztatas");
+                else MessageBox.Show("Nem sikerult a valtoztatas");
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+                kiiras();
+            }
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            Form2 f2 = new Form2();
+            f2.Show();
+        }
+    }
+public Form2()
+        {
+            InitializeComponent();
+        }
+        SqlConnection con = new SqlConnection(@"Data Source=221-PROF\SQLEXPRESS;Initial Catalog=a13;Integrated Security=True");
+        private void Form2_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try {
+                //grid
+                SqlCommand cmd = new SqlCommand("SELECT     Producer.Nev, COUNT(Gyartotta.FilmID) AS [Filmek szama] FROM         Producer INNER JOIN Gyartotta ON Producer.ProducerID = Gyartotta.ProducerID GROUP BY Producer.Nev;", con);
+                con.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                dataGridView1.DataSource = dt;
+                dr.Close();
+
+                //chart
+                SqlCommand cmd1 = new SqlCommand("SELECT     Producer.Nev, COUNT(Gyartotta.FilmID) AS [Filmek szama] FROM         Producer INNER JOIN Gyartotta ON Producer.ProducerID = Gyartotta.ProducerID GROUP BY Producer.Nev;", con);                
+                SqlDataReader dr1 = cmd.ExecuteReader();
+
+                chart1.Series.Clear();
+                chart1.Series.Add("adatok");
+                chart1.Series["adatok"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.RangeColumn;
+
+                chart1.ChartAreas["ChartArea1"].AxisX.Interval = 1; //megjeleniti az x tengelyen az osszes nevet
+                int i = 0;
+                if(dr1.HasRows)
+                {
+                    while (dr1.Read())
+                    {
+                        chart1.Series["adatok"].Points.AddXY(dr1[0], dr1[1]);
+                        chart1.Series["adatok"].Points[i].Label = dr1[1].ToString();
+                        i++;
+                    }
+                }
+                dr1.Close();
+            }
+            catch(Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+    } ' id="13">
+<input type="hidden" value='
+public partial class Form1 : Form
+    {
+        //SqlConnection con = new SqlConnection(@"Data Source=T-5\SQLEXPRESS;Initial Catalog=b1_b2;Integrated Security=True");
+        SqlConnection con = new SqlConnection(@"Data Source=DESKTOP-ENVSSHH\SQLEXPRESS;Initial Catalog=b1_b2;Integrated Security=True");
+        
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Regisztracio_Enter(object sender, EventArgs e)
+        {
+            KutyaFeltoltes();
+            KiallitasFeltoltes("Select KiallitasID, KiallitasID + MACSKA - MACSKA + Hely +MACSKA - MACSKA + CAST(Datum as nvarchar) AS KiallitasHely FROM Kiallitas ORDER BY KiallitasID ASC", comboBox2);
+            KategoriaFeltoltes();
+
+        }
+        private void KutyaFeltoltes()
+        {
+            try
+            {
+                SqlCommand kiiras = new SqlCommand("Select KutyaID, CAST(KutyaID AS NVARCHAR)+MACSKA - MACSKA + Nev AS KUTYANEV FROM Kutya ORDER BY KutyaID ASC", con);
+                con.Open();
+                SqlDataReader dr = kiiras.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                comboBox1.ValueMember = "KutyaID";
+                comboBox1.DisplayMember = "KUTYANEV";
+                comboBox1.DataSource = dt;
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show("Hiba" + x);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            
+        }
+        private void KiallitasFeltoltes(string parancs, ComboBox Combo)
+        {
+            try
+            {
+                SqlCommand kiiras = new SqlCommand(parancs, con);
+                kiiras.Parameters.AddWithValue("@ma", DateTime.Now);
+                con.Open();
+                SqlDataReader dr = kiiras.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                Combo.ValueMember = "KiallitasID";
+                Combo.DisplayMember = "KiallitasHely";
+                Combo.DataSource = dt;
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show("Hiba" + x);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+        private void KategoriaFeltoltes()
+        {
+            try
+            {
+                SqlCommand kiiras = new SqlCommand("Select KategoriaID, CAST(KategoriaID AS NVARCHAR)+MACSKA - MACSKA + Elnevezes AS KutyaElnevezes FROM Kategoria ORDER BY KategoriaID ASC", con);
+                con.Open();
+                SqlDataReader dr = kiiras.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+
+                comboBox3.ValueMember = "KategoriaID";
+                comboBox3.DisplayMember = "KutyaElnevezes";
+                comboBox3.DataSource = dt;
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show("Hiba" + x);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try {
+                SqlCommand DatumKiolvasas = new SqlCommand("Select Datum from Kiallitas where KiallitasID = @a", con);
+                DatumKiolvasas.Parameters.AddWithValue("@a", comboBox2.SelectedValue);
+                con.Open();
+                DateTime KiallitasDatuma = Convert.ToDateTime(DatumKiolvasas.ExecuteScalar());
+                if (DateTime.Now > KiallitasDatuma )
+                {
+                    MessageBox.Show("Mar megtartott esemenyre nem lehet elmenni"); 
+ 
+                }
+                else if (DateTime.Now < KiallitasDatuma && (KiallitasDatuma - DateTime.Now).TotalHours <= 48)
+                {
+                    MessageBox.Show("Kevesebb mint 48 ora van hatra, mar nem lehet jelentkezni.");
+                }
+                    
+
+                else {
+                   try {
+                    //BEVITEL
+                       SqlCommand bevitel = new SqlCommand("Insert into Eredmeny(KutyaID, KiallitasID, KategoriaID) values (@kutya, @kiall, @kateg)", con);
+                       bevitel.Parameters.AddWithValue("@kutya", comboBox1.SelectedValue);
+                       bevitel.Parameters.AddWithValue("@kiall", comboBox2.SelectedValue);
+                       bevitel.Parameters.AddWithValue("@kateg", comboBox3.SelectedValue);
+                       if (con.State == ConnectionState.Closed)
+                       {
+                           con.Open();
+                       }
+                       if (bevitel.ExecuteNonQuery() > 0)
+                       {
+                           MessageBox.Show("Sikeres bevitel");
+                       }
+                       else MessageBox.Show("Sikertelen bevitel");
+                   }
+
+                   catch (SqlException x) 
+                   { 
+                       MessageBox.Show(x.Message); 
+                   }
+                   finally 
+                   { 
+                       con.Close(); 
+                   }
+                }
+            }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            
+            finally { con.Close(); }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        private void Statisztika_Enter(object sender, EventArgs e)
+        {
+            KiallitasFeltoltes("Select KiallitasID, KiallitasID + MACSKA - MACSKA + Hely +MACSKA - MACSKA + CAST(Datum as nvarchar) AS KiallitasHely FROM Kiallitas WHERE Datum < @ma ORDER BY KiallitasID ASC", comboBox4);
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try 
+            {
+                SqlCommand nevezett = new SqlCommand("SELECT COUNT (KutyaID) AS KutyakSzama FROM Eredmeny WHERE (KiallitasID = @id)", con);
+                SqlCommand versenyzett = new SqlCommand("SELECT COUNT (KutyaID) AS KutyakSzama FROM Eredmeny WHERE (KiallitasID = @id) AND Eredmeny IS NOT NULL;", con);
+                nevezett.Parameters.AddWithValue("@id", comboBox4.SelectedValue);
+                versenyzett.Parameters.AddWithValue("@id", comboBox4.SelectedValue);
+                if (con.State == ConnectionState.Closed) { con.Open(); }
+                label4.Text = nevezett.ExecuteScalar().ToString();
+                label6.Text = versenyzett.ExecuteScalar().ToString();
+                }
+            catch (Exception x) { MessageBox.Show(x.Message); }
+            finally { con.Close(); }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            GridViewFeltoltes();
+            CharFeltoltes();
+
+        }
+        private void GridViewFeltoltes()
+        {
+            try
+            {
+                SqlCommand GridFeltoltes = new SqlCommand("SELECT Kategoria.KategoriaID, Kategoria.Elnevezes, COUNT (Eredmeny.KutyaID) as KutyakSzama  FROM Kategoria INNER JOIN Eredmeny ON Kategoria.KategoriaID = Eredmeny.KategoriaID WHERE (Eredmeny.KiallitasID = @id) AND Eredmeny.Eredmeny IS NOT NULL GROUP BY Kategoria.KategoriaID,Kategoria.Elnevezes;", con);
+                con.Open();
+                GridFeltoltes.Parameters.AddWithValue("@id", comboBox4.SelectedValue);
+                SqlDataReader dr = GridFeltoltes.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(dr);
+                dataGridView1.DataSource = dt;
+                dr.Close();
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+            private void CharFeltoltes()
+            {
+                try
+                {
+                    chart1.Series.Clear();
+                    chart1.Legends.Clear();
+                    chart1.Series.Add("Kutyak szama");
+                    chart1.Legends.Add("Kategoria");
+                    chart1.Series["Kutyak szama"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+
+                    SqlCommand ChartFelt = new SqlCommand("SELECT Kategoria.KategoriaID, Kategoria.Elnevezes, COUNT (Eredmeny.KutyaID) as KutyakSzama  FROM Kategoria INNER JOIN Eredmeny ON Kategoria.KategoriaID = Eredmeny.KategoriaID WHERE (Eredmeny.KiallitasID = @id) AND Eredmeny.Eredmeny IS NOT NULL GROUP BY Kategoria.KategoriaID,Kategoria.Elnevezes;", con);
+                    con.Open();
+                    ChartFelt.Parameters.AddWithValue("@id", comboBox4.SelectedValue);
+                    SqlDataReader dr = ChartFelt.ExecuteReader();
+                    int i = 0;
+                    while (dr.Read())
+                    {
+                        chart1.Series["Kutyak szama"].Points.AddXY(dr[1], dr[2]);
+                        chart1.Series["Kutyak szama"].Points[i].Label = dr[2].ToString();
+                        chart1.Series["Kutyak szama"].Points[i].LegendText = dr[1].ToString();
+                        i++;
+                    }
+                }
+                catch (Exception x)
+                {
+                    MessageBox.Show(x.Message);
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+            private void button4_Click(object sender, EventArgs e)
+            {
+                Application.Exit();
+            }
+
+            private void Kilepes_Enter(object sender, EventArgs e)
+            {
+                Application.Exit();
+            }
+			
+            private void Applikaciorol_Enter(object sender, EventArgs e)
+            {
+                label9.Text = "Ez a Webform adatbazisbolnevezheti a szemely a kutyajat egy adott eloasdasra es meghatarozott kategoriaban, meg a masodik fulon statisztikakat lathat a mar megtartott kiallitasokrol.";
+            }
+    }' id="16">
 
 <button style="color:#F8F8F8" onclick="myFunction1()">1</button>
 <button style="color:#F8F8F8" onclick="myFunction2()">2</button>
@@ -649,6 +3015,7 @@ public Form1()
 <button style="color:#F8F8F8" onclick="myFunction11()">11</button>
 <button style="color:#F8F8F8" onclick="myFunction12()">12</button>
 <button style="color:#F8F8F8" onclick="myFunction13()">13</button>
+<button style="color:#F8F8F8" onclick="myFunction16()">16</button>
 
 
 
@@ -711,6 +3078,11 @@ function myFunction12() {
 }
 function myFunction13() {
   var copyText = document.getElementById("13");
+  copyText.select();
+  navigator.clipboard.writeText(copyText.value);
+}
+function myFunction16() {
+  var copyText = document.getElementById("16");
   copyText.select();
   navigator.clipboard.writeText(copyText.value);
 }
